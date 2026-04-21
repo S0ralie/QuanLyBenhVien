@@ -20,7 +20,7 @@ public class QuanLyBenhVienApplication {
 		System.setProperty("java.awt.headless", "false");
 		Desktop desktop = Desktop.getDesktop();
 		try {
-			desktop.browse(new URI("http://localhost:8080/login.html"));
+			desktop.browse(new URI("http://localhost:8080/"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

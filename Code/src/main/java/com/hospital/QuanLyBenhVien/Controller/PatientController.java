@@ -20,19 +20,24 @@ public class PatientController {
     private EntityManager entityManager;
 
     // lịch sử khám của 1 Bệnh nhân
-    @GetMapping("/history/{maBN}")
-    public ResponseEntity<?> getHistory(@PathVariable String maBN) {
+    // API TÌM KIẾM THÔNG MINH (Theo Tên HOẶC CCCD)
+    @GetMapping("/history/search")
+    public ResponseEntity<?> searchHistorySmart(@RequestParam String keyword) {
         String sql = "SELECT pkq.MaPhieuKQ, pkq.NgayKham, pkq.TrieuChung, pkq.ChanDoan, nv.HoTen AS TenBacSi " +
                 "FROM PhieuKetQuaKhamBenh pkq " +
                 "JOIN HoSoBenhAn hs ON pkq.MaHS = hs.MaHS " +
+                "JOIN BenhNhan bn ON hs.MaBN = bn.MaBN " +
                 "JOIN NhanVienYTe nv ON pkq.MaNV = nv.MaNV " +
-                "WHERE hs.MaBN = :maBN ORDER BY pkq.NgayKham DESC";
+                "WHERE bn.HoTen LIKE :keyword OR bn.CCCD = :exactKeyword " +
+                "ORDER BY pkq.NgayKham DESC";
 
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("maBN", maBN);
-        // Chuyển kết quả SQL thành JSON
-        query.unwrap(NativeQuery.class).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+        // Tìm tên thì dùng LIKE (có chứa từ khóa)
+        query.setParameter("keyword", "%" + keyword + "%");
+        // Tìm CCCD thì phải gõ chính xác
+        query.setParameter("exactKeyword", keyword);
 
+        query.unwrap(NativeQuery.class).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         return ResponseEntity.ok(query.getResultList());
     }
 
