@@ -1,4 +1,4 @@
-package com.hospital.QuanLyBenhVien.controller;
+package com.hospital.QuanLyBenhVien.Controller;
 
 import com.hospital.QuanLyBenhVien.entity.TaiKhoan;
 import com.hospital.QuanLyBenhVien.repository.TaiKhoanRepository;
@@ -25,7 +25,7 @@ public class AuthController {
 
         Optional<TaiKhoan> userOpt = repo.findById(username);
 
-        if (userOpt.isPresent() && userOpt.get().getMatKhau().equals(password)) {
+        if (userOpt.isPresent() && userOpt.get().getMatKhau().trim().equals(password)) {
             TaiKhoan user = userOpt.get();
             Map<String, String> response = new HashMap<>();
             response.put("role", user.getMaQuyen());
