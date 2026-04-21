@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Cổng Thông Tin Bệnh Nhân</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-dark bg-success mb-4 shadow">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Tra Cứu Lịch Sử & Viện Phí</span>
+        <button class="btn btn-outline-light btn-sm" onclick="logout()">Đăng Xuất</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card shadow mb-4">
+        <div class="card-body d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Nhập Mã Bệnh Nhân (VD: BN001)...">
+            <button class="btn btn-success px-4" onclick="loadHistory()">Tra Cứu</button>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-white"><h5 class="mb-0 text-success">Lịch Sử Khám Bệnh</h5></div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-success">
+                <tr>
+                    <th>Ngày Khám</th>
+                    <th>Bác Sĩ</th>
+                    <th>Triệu Chứng</th>
+                    <th>Chẩn Đoán</th>
+                    <th class="text-center">Hành Động</th>
+                </tr>
+                </thead>
+                <tbody id="historyBody">
+                <tr><td colspan="5" class="text-center text-muted py-3">Vui lòng tra cứu mã bệnh nhân...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="billModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Chi Tiết Đơn Thuốc & Viện Phí</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Tên Thuốc</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá</th>
+                        <th>Thành Tiền</th>
+                    </tr>
+                    </thead>
+                    <tbody id="billBody"></tbody>
+                </table>
+                <div class="text-end mt-3">
+                    <h6>Phí Khám Bệnh: <span class="text-primary">150,000 VNĐ</span></h6>
+                    <h4 class="text-danger">Tổng Thanh Toán: <span id="totalBill">0</span> VNĐ</h4>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="alert('Hệ thống thanh toán đang bảo trì!')">Thanh Toán Trực Tuyến</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = () => {
+            const userId = localStorage.getItem('userId');
+            if(userId) {
+                document.getElementById('searchInput').value = userId;
+                loadHistory(); // Tự động load nếu là bệnh nhân
+
+                // Nếu là bệnh nhân, khóa ô tìm kiếm không cho tra người khác
+                if(localStorage.getItem('role') === 'BENHNHAN') {
+                    document.getElementById('searchInput').disabled = true;
+                }
+            }
+        }
+
+        // lịch sử
+        function loadHistory() {
+            const maBN = document.getElementById('searchInput').value;
+            if(!maBN) return alert("Vui lòng nhập mã BN");
+
+            fetch('/api/patient/history/' + maBN)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    if(data.length === 0) {
+                        html = '<tr><td colspan="5" class="text-center text-danger">Không tìm thấy lịch sử khám!</td></tr>';
+                    } else {
+                        data.forEach(item => {
+                            // Cắt bớt phần giờ, chỉ lấy ngày (YYYY-MM-DD)
+                            let dateObj = new Date(item.NgayKham);
+                            let shortDate = dateObj.toLocaleDateString('vi-VN');
+
+                            html += `
+                                <tr>
+                                    <td><strong>${shortDate}</strong></td>
+                                    <td>${item.TenBacSi}</td>
+                                    <td>${item.TrieuChung}</td>
+                                    <td><span class="text-primary">${item.ChanDoan}</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-success" onclick="viewBill('${item.MaPhieuKQ}')">Xem Hóa Đơn</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    document.getElementById('historyBody').innerHTML = html;
+                });
+        }
+
+        // đơn thuốc và tính tiền
+        function viewBill(maPhieuKQ) {
+            fetch('/api/patient/prescription/' + maPhieuKQ)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    let tongTienThuoc = 0;
+
+                    data.forEach(thuoc => {
+                        html += `
+                            <tr>
+                                <td>${thuoc.TenThuoc}</td>
+                                <td>${thuoc.SoLuong}</td>
+                                <td>${thuoc.DonGia.toLocaleString()} đ</td>
+                                <td><b>${thuoc.ThanhTien.toLocaleString()} đ</b></td>
+                            </tr>
+                        `;
+                        tongTienThuoc += thuoc.ThanhTien;
+                    });
+
+                    document.getElementById('billBody').innerHTML = html;
+
+                    // Phí khám cố định 150k + Tiền thuốc
+                    let tongCong = tongTienThuoc + 150000;
+                    document.getElementById('totalBill').innerText = tongCong.toLocaleString();
+
+                    // Hiện bảng nổi lên
+                    new bootstrap.Modal(document.getElementById('billModal')).show();
+                });
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+</script>
+</body>
+</html>
