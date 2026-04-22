@@ -13,9 +13,9 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="#">🏥 Bệnh Viện Đa Khoa</a>
+        <a class="navbar-brand" href="#">🏥 Bệnh Viện Đa Khoa XXX</a>
         <div class="d-flex">
-            <a href="/login.html" class="btn btn-outline-light btn-sm">Dành cho Bác Sĩ / Lễ Tân</a>
+            <a href="/login.html" class="btn btn-outline-light btn-sm">Bác Sĩ / Lễ Tân</a>
         </div>
     </div>
 </nav>
@@ -118,7 +118,7 @@
             });
     }
 
-    // Hàm 2: Xem chi tiết hóa đơn thuốc (Giữ nguyên như cũ)
+    // Xem chi tiết hóa đơn thuốc
     function viewBill(maPhieuKQ) {
         fetch('/api/patient/prescription/' + maPhieuKQ)
             .then(res => res.json())

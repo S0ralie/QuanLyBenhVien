@@ -20,7 +20,6 @@ public class PatientController {
     private EntityManager entityManager;
 
     // lịch sử khám của 1 Bệnh nhân
-    // API TÌM KIẾM THÔNG MINH (Theo Tên HOẶC CCCD)
     @GetMapping("/history/search")
     public ResponseEntity<?> searchHistorySmart(@RequestParam String keyword) {
         String sql = "SELECT pkq.MaPhieuKQ, pkq.NgayKham, pkq.TrieuChung, pkq.ChanDoan, nv.HoTen AS TenBacSi " +
@@ -32,16 +31,13 @@ public class PatientController {
                 "ORDER BY pkq.NgayKham DESC";
 
         Query query = entityManager.createNativeQuery(sql);
-        // Tìm tên thì dùng LIKE (có chứa từ khóa)
         query.setParameter("keyword", "%" + keyword + "%");
-        // Tìm CCCD thì phải gõ chính xác
         query.setParameter("exactKeyword", keyword);
 
         query.unwrap(NativeQuery.class).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         return ResponseEntity.ok(query.getResultList());
     }
 
-    //chi tiết Đơn thuốc và Hóa đơn 1 lần khám
     @GetMapping("/prescription/{maPhieuKQ}")
     public ResponseEntity<?> getPrescriptionAndBill(@PathVariable String maPhieuKQ) {
         String sql = "SELECT t.TenThuoc, c.SoLuong, t.DonGia, (c.SoLuong * t.DonGia) AS ThanhTien " +

@@ -1,0 +1,123 @@
+-- CREATE DATABASE QuanLyBenhVien;
+-- GO
+USE QuanLyBenhVien;
+GO
+
+CREATE TABLE Khoa (
+    MaKhoa VARCHAR(20) PRIMARY KEY,
+    TenKhoa NVARCHAR(100) NOT NULL,
+    ViTri NVARCHAR(255),
+    SDT VARCHAR(15)
+);
+
+CREATE TABLE Quyen (
+    MaQuyen VARCHAR(20) PRIMARY KEY,
+    TenQuyen NVARCHAR(50) NOT NULL,
+    MoTa NVARCHAR(255)
+);
+
+CREATE TABLE Thuoc (
+    MaThuoc VARCHAR(20) PRIMARY KEY,
+    TenThuoc NVARCHAR(100) NOT NULL,
+    DonVi NVARCHAR(20),
+    DonGia DECIMAL(18,2)
+);
+
+CREATE TABLE BenhNhan (
+    MaBN VARCHAR(20) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    CCCD VARCHAR(12) UNIQUE,
+    NgaySinh DATE,
+    GioiTinh NVARCHAR(10),
+    DiaChi NVARCHAR(255),
+    SDT VARCHAR(15),
+    BHYT VARCHAR(20) UNIQUE
+);
+
+CREATE TABLE NhanVienYTe (
+    MaNV VARCHAR(20) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    CCCD VARCHAR(12) UNIQUE,
+    NgaySinh DATE,
+    GioiTinh NVARCHAR(10),
+    SDT VARCHAR(15),
+    ChucVu NVARCHAR(50),
+    MaKhoa VARCHAR(20),
+    FOREIGN KEY (MaKhoa) REFERENCES Khoa(MaKhoa)
+);
+
+CREATE TABLE BacSi (
+    MaNV VARCHAR(20) PRIMARY KEY,
+    ChuyenMon NVARCHAR(100),
+    BangCap NVARCHAR(100),
+    SoChungChiHanhNghe VARCHAR(50) UNIQUE,
+    FOREIGN KEY (MaNV) REFERENCES NhanVienYTe(MaNV)
+);
+
+CREATE TABLE HoSoBenhAn (
+    MaHS VARCHAR(20) PRIMARY KEY,
+    NgayTao DATE DEFAULT GETDATE(),
+    NhomMau VARCHAR(5),
+    TienSuBenh NVARCHAR(500),
+    MaBN VARCHAR(20) UNIQUE, 
+    FOREIGN KEY (MaBN) REFERENCES BenhNhan(MaBN)
+);
+
+CREATE TABLE TaiKhoan (
+    TenDangNhap VARCHAR(50) PRIMARY KEY,
+    MatKhau VARCHAR(255) NOT NULL,
+    MaQuyen VARCHAR(20),
+    MaNV VARCHAR(20) UNIQUE NULL,  
+    FOREIGN KEY (MaQuyen) REFERENCES Quyen(MaQuyen),
+    FOREIGN KEY (MaNV) REFERENCES NhanVienYTe(MaNV),
+);
+
+CREATE TABLE PhieuDangKyKham (
+    MaPhieuDK VARCHAR(20) PRIMARY KEY,
+    NgayKham DATE DEFAULT GETDATE(),
+    GioKham TIME,
+    TrangThai NVARCHAR(50) DEFAULT N'Chờ Khám',
+    MaBN VARCHAR(20),
+    MaNV VARCHAR(20), 
+    FOREIGN KEY (MaBN) REFERENCES BenhNhan(MaBN),
+    FOREIGN KEY (MaNV) REFERENCES BacSi(MaNV)
+);
+
+CREATE TABLE PhieuKetQuaKhamBenh (
+    MaPhieuKQ VARCHAR(20) PRIMARY KEY,
+    NgayKham DATETIME DEFAULT GETDATE(),
+    TrieuChung NVARCHAR(500),
+    ChanDoan NVARCHAR(500),
+    MaHS VARCHAR(20),
+    MaNV VARCHAR(20), 
+    FOREIGN KEY (MaHS) REFERENCES HoSoBenhAn(MaHS),
+    FOREIGN KEY (MaNV) REFERENCES BacSi(MaNV)
+);
+
+CREATE TABLE DonThuoc (
+    MaDonThuoc VARCHAR(20) PRIMARY KEY,
+    NgayKeDon DATE DEFAULT GETDATE(),
+    MaPhieuKQ VARCHAR(20) UNIQUE,
+    FOREIGN KEY (MaPhieuKQ) REFERENCES PhieuKetQuaKhamBenh(MaPhieuKQ)
+);
+
+CREATE TABLE ChiTietDonThuoc (
+    MaDonThuoc VARCHAR(20),
+    MaThuoc VARCHAR(20),
+    SoLuong INT,
+    LieuLuong NVARCHAR(255),
+    PRIMARY KEY (MaDonThuoc, MaThuoc),
+    FOREIGN KEY (MaDonThuoc) REFERENCES DonThuoc(MaDonThuoc),
+    FOREIGN KEY (MaThuoc) REFERENCES Thuoc(MaThuoc)
+);
+
+CREATE TABLE HoaDonThanhToan (
+    MaHD VARCHAR(20) PRIMARY KEY,
+    NgayLap DATETIME DEFAULT GETDATE(),
+    TongTien DECIMAL(18,2),
+    MucGiamBHYT FLOAT DEFAULT 0,
+    TrangThai NVARCHAR(50) DEFAULT N'Chưa Thanh Toán',
+    MaBN VARCHAR(20),
+    FOREIGN KEY (MaBN) REFERENCES BenhNhan(MaBN)
+);
+
