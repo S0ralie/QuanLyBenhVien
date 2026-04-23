@@ -1,54 +1,55 @@
 package com.hospital.QuanLyBenhVien.Controller;
 
-import com.hospital.QuanLyBenhVien.entity.TaiKhoan;
-import com.hospital.QuanLyBenhVien.repository.TaiKhoanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*")
 public class AuthController {
 
     @Autowired
-    private TaiKhoanRepository repo;
+    private EntityManager entityManager;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password");
+    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
 
-        // --- ĐOẠN NÀY LÀ MÁY ĐẾM NÓI THẬT ---
-        System.out.println("1. Web gửi xuống Username: [" + username + "]");
-        System.out.println("2. Web gửi xuống Password: [" + password + "]");
+        // CÂU LỆNH MỚI: Chỉ kiểm tra tài khoản và lấy tên Nhân viên y tế
+        String sql = "SELECT tk.TenDangNhap, tk.MaQuyen, tk.MaNV, nv.HoTen AS TenNhanVien " +
+                "FROM TaiKhoan tk " +
+                "JOIN NhanVienYTe nv ON tk.MaNV = nv.MaNV " +
+                "WHERE tk.TenDangNhap = :username AND tk.MatKhau = :password";
 
-        Optional<TaiKhoan> userOpt = repo.findById(username);
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("username", username);
+        query.setParameter("password", password);
 
-        if (userOpt.isPresent()) {
-            TaiKhoan user = userOpt.get();
-            System.out.println("3. TÌM THẤY TÀI KHOẢN TRONG DB!");
-            System.out.println("4. Password trong DB đang là: [" + user.getMatKhau() + "]");
+        // Ép kiểu kết quả về dạng Map (Key - Value) để trả về JSON cho Web dễ đọc
+        query.unwrap(NativeQuery.class).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 
-            // Dùng .trim() để cắt khoảng trắng
-            if (user.getMatKhau().trim().equals(password)) {
-                System.out.println("5. MẬT KHẨU KHỚP! CHO PHÉP ĐĂNG NHẬP.");
-                Map<String, String> response = new HashMap<>();
-                response.put("role", user.getMaQuyen().trim());
-                response.put("id", user.getMaNV() != null ? user.getMaNV() : user.getMaBN());
-                return ResponseEntity.ok(response);
-            } else {
-                System.out.println("5. MẬT KHẨU KHÔNG KHỚP!");
-            }
-        } else {
-            System.out.println("3. KHÔNG TÌM THẤY TÀI KHOẢN NÀY TRONG DATABASE!");
+        List<Map<String, Object>> result = query.getResultList();
+
+        // Kiểm tra nếu List rỗng nghĩa là sai tài khoản hoặc mật khẩu
+        if (result.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("message", "Sai tên đăng nhập hoặc mật khẩu!"));
         }
-        // ------------------------------------
 
-        return ResponseEntity.status(401).body("Sai tài khoản hoặc mật khẩu");
+        // Nếu thành công, trả về thông tin của Bác sĩ/Nhân viên
+        Map<String, Object> userInfo = result.get(0);
+
+        // BẢO MẬT THÊM: Chặn luôn nếu lỡ còn sót tài khoản Bệnh nhân nào trong DB
+        String quyen = (String) userInfo.get("MaQuyen");
+        if ("BENHNHAN".equalsIgnoreCase(quyen)) {
+            return ResponseEntity.status(403).body(Map.of("message", "Bệnh nhân vui lòng ra trang chủ tra cứu, không dùng cổng đăng nhập này!"));
+        }
+
+        return ResponseEntity.ok(userInfo);
     }
 }

@@ -50,7 +50,6 @@
             .then(data => {
                 let html = '';
                 data.forEach(p => {
-                    // Xác định màu sắc cho Badge
                     let badgeColor = 'bg-secondary';
                     if(p.trangThai === 'Chờ Khám') badgeColor = 'bg-warning text-dark';
                     if(p.trangThai === 'Đã Đến') badgeColor = 'bg-info text-dark';
