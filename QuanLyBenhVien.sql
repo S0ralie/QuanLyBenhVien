@@ -1,6 +1,6 @@
 -- CREATE DATABASE QuanLyBenhVien;
 -- GO
-USE QuanLyBenhVien;
+USE [QuanLyBenhVien];
 GO
 
 CREATE TABLE Khoa (

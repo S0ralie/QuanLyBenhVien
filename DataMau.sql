@@ -6,7 +6,7 @@ DELETE FROM ChiTietDonThuoc;
 DELETE FROM DonThuoc;
 DELETE FROM PhieuKetQuaKhamBenh;
 DELETE FROM PhieuDangKyKham;
-DELETE FROM TaiKhoan; -- Xóa sạch tài khoản trước
+DELETE FROM TaiKhoan; 
 DELETE FROM BacSi;
 DELETE FROM NhanVienYTe;
 DELETE FROM HoSoBenhAn;
@@ -38,8 +38,8 @@ INSERT INTO BenhNhan (MaBN, HoTen, CCCD, NgaySinh, GioiTinh, DiaChi, SDT, BHYT) 
 
 -- Nhân Viên & Bác Sĩ
 INSERT INTO NhanVienYTe (MaNV, HoTen, CCCD, NgaySinh, GioiTinh, SDT, ChucVu, MaKhoa) VALUES 
-('NV01', N'Bác sĩ Trương Gia Bình', '001090123456', '1975-01-01', N'Nam', '0901112222', N'Trưởng khoa', 'K01'),
-('NV02', N'Bác sĩ Lê Thanh Hải', '001090654321', '1980-05-05', N'Nam', '0903334444', N'Bác sĩ điều trị', 'K02');
+('NV01', N'Trương Gia Bình', '001090123456', '1975-01-01', N'Nam', '0901112222', N'Trưởng khoa', 'K01'),
+('NV02', N'Lê Thanh Hải', '001090654321', '1980-05-05', N'Nam', '0903334444', N'Bác sĩ điều trị', 'K02');
 
 INSERT INTO BacSi (MaNV, ChuyenMon, BangCap, SoChungChiHanhNghe) VALUES 
 ('NV01', N'Nội tổng quát', N'Tiến sĩ', 'CCHN001'),
@@ -47,7 +47,6 @@ INSERT INTO BacSi (MaNV, ChuyenMon, BangCap, SoChungChiHanhNghe) VALUES
 
 -- Tài Khoản & Hồ Sơ Bệnh Án
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, MaQuyen, MaNV) VALUES 
-('admin', '123456', 'ADMIN', NULL),
 ('bacsi1', '123456', 'BACSI', 'NV01'),
 ('bacsi2', '123456', 'BACSI', 'NV02');
 
