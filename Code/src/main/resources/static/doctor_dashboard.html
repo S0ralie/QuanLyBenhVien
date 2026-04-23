@@ -2,95 +2,304 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Điều Khiển Bác Sĩ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .header-bg { background-color: #0d6efd; color: white; padding: 15px; }
+        .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; }
+    </style>
 </head>
 <body class="bg-light">
-<nav class="navbar navbar-dark bg-primary mb-4">
-    <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">Hệ Thống Quản Lý Bệnh Viện - Dành Cho Bác Sĩ</span>
+
+<div class="header-bg d-flex justify-content-between align-items-center mb-4 shadow-sm">
+    <h4 class="m-0">Hệ Thống Quản Lý Bệnh Viện - Dành Cho Bác Sĩ</h4>
+    <div>
+        <span id="doctorNameDisplay" class="me-3 fw-bold"></span>
         <button class="btn btn-danger btn-sm" onclick="logout()">Đăng Xuất</button>
     </div>
-</nav>
+</div>
 
 <div class="container">
-    <div class="card shadow">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Danh Sách Bệnh Nhân Đặt Lịch</h5>
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-lichkham" type="button">Lịch Khám Của Bệnh Nhân</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-benhnhan" type="button">Quản Lý Bệnh Nhân (CRUD)</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+
+        <div class="tab-pane fade show active" id="tab-lichkham" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white"><h5 class="m-0">Danh Sách Bệnh Nhân Đặt Lịch</h5></div>
+                <div class="card-body">
+                    <table class="table table-hover table-bordered text-center align-middle">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Mã Phiếu</th>
+                            <th>Mã Bệnh Nhân</th>
+                            <th>Ngày Khám</th>
+                            <th>Giờ Khám</th>
+                            <th>Trạng Thái Hiện Tại</th>
+                            <th>Cập Nhật Trạng Thái</th>
+                        </tr>
+                        </thead>
+                        <tbody id="appointmentTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                <tr>
-                    <th>Mã Phiếu</th>
-                    <th>Mã Bệnh Nhân</th>
-                    <th>Ngày Khám</th>
-                    <th>Giờ Khám</th>
-                    <th>Trạng Thái Hiện Tại</th>
-                    <th>Cập Nhật Trạng Thái</th>
-                </tr>
-                </thead>
-                <tbody id="tableBody">
-                </tbody>
-            </table>
+
+        <div class="tab-pane fade" id="tab-benhnhan" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="m-0">Hồ Sơ Bệnh Nhân</h4>
+                <button class="btn btn-success" onclick="openAddModal()">+ Thêm Mới</button>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover table-bordered text-center align-middle">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Mã BN</th>
+                            <th>Họ Tên</th>
+                            <th>CCCD</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Hành Động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="patientTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="patientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Thêm Bệnh Nhân</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="patientForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mã Bệnh Nhân</label>
+                        <input type="text" class="form-control" id="maBN" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và Tên</label>
+                        <input type="text" class="form-control" id="hoTen" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số CCCD</label>
+                        <input type="text" class="form-control" id="cccd">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số Điện Thoại</label>
+                        <input type="text" class="form-control" id="sdt">
+                    </div>
+                    <input type="hidden" id="isEditMode" value="false">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="savePatient()">Lưu Thông Tin</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    if(!localStorage.getItem('role') || localStorage.getItem('role') === 'BENHNHAN') {
-        window.location.href = '/login.html';
-    }
+    const API_PHIEU = 'http://localhost:8080/api/phieu-kham';
+    const API_BENHNHAN = 'http://localhost:8080/api/benh-nhan';
+    let patientModal;
 
-    loadData();
+    // Chạy ngay khi load trang
+    document.addEventListener("DOMContentLoaded", () => {
+        const doctorName = localStorage.getItem('userName');
+        if (doctorName) document.getElementById('doctorNameDisplay').innerText = "BS. " + doctorName;
 
-    function loadData() {
-        fetch('/api/phieu-kham')
+        patientModal = new bootstrap.Modal(document.getElementById('patientModal'));
+
+        // Load dữ liệu cho cả 2 tab
+        loadAppointments();
+        loadPatients();
+    });
+
+    // ==========================================
+    // JS CHO TAB 1: LỊCH KHÁM & CẬP NHẬT TRẠNG THÁI
+    // ==========================================
+    function loadAppointments() {
+        fetch(API_PHIEU)
             .then(res => res.json())
             .then(data => {
-                let html = '';
-                data.forEach(p => {
-                    let badgeColor = 'bg-secondary';
-                    if(p.trangThai === 'Chờ Khám') badgeColor = 'bg-warning text-dark';
-                    if(p.trangThai === 'Đã Đến') badgeColor = 'bg-info text-dark';
-                    if(p.trangThai === 'Khám Xong') badgeColor = 'bg-success';
-                    if(p.trangThai === 'Đã Hủy') badgeColor = 'bg-danger';
+                const tbody = document.getElementById('appointmentTableBody');
+                tbody.innerHTML = '';
+                data.forEach(phieu => {
+                    // Tạo màu cho trạng thái (Đã khám = Xanh, Chờ khám = Vàng)
+                    let badgeClass = phieu.trangThai === 'Chờ khám' ? 'bg-warning text-dark' : 'bg-secondary';
+                    if(phieu.trangThai === 'Đã khám' || phieu.trangThai === 'Đã khám xong') badgeClass = 'bg-success';
 
-                    html += `
-                        <tr class="${p.trangThai === 'Đã Hủy' ? 'text-muted' : ''}">
-                            <td><b>${p.maPhieuDK}</b></td>
-                            <td>${p.maBN}</td>
-                            <td>${p.ngayKham}</td>
-                            <td>${p.gioKham}</td>
-                            <td><span class="badge ${badgeColor}">${p.trangThai}</span></td>
+                    // Chú ý: Cần chắc chắn các biến phieu.maPhieuDK hay phieu.MaPhieuDK đúng với Java gửi về
+                    // Ở đây mình giả định Java gửi về mã là maPhieuDK (cần khớp với file Entity)
+                    let maP = phieu.maPhieuDK || phieu.MaPhieuDK;
+                    let maB = phieu.maBN || phieu.MaBN;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${maP}</td>
+                            <td>${maB}</td>
+                            <td>${phieu.ngayKham ? phieu.ngayKham.split('T')[0] : ''}</td>
+                            <td>${phieu.gioKham || ''}</td>
+                            <td><span class="badge ${badgeClass}">${phieu.trangThai || 'Chưa rõ'}</span></td>
                             <td>
-                                <select class="form-select form-select-sm" onchange="updateStatus('${p.maPhieuDK}', this.value)" ${p.trangThai === 'Đã Hủy' || p.trangThai === 'Khám Xong' ? 'disabled' : ''}>
-                                    <option value="Chờ Khám" ${p.trangThai === 'Chờ Khám' ? 'selected' : ''}>Chờ Khám</option>
-                                    <option value="Đã Đến" ${p.trangThai === 'Đã Đến' ? 'selected' : ''}>Đã Đến</option>
-                                    <option value="Khám Xong" ${p.trangThai === 'Khám Xong' ? 'selected' : ''}>Khám Xong</option>
-                                    <option value="Đã Hủy" ${p.trangThai === 'Đã Hủy' ? 'selected' : ''}>Đã Hủy</option>
+                                <select class="form-select form-select-sm d-inline-block w-auto" onchange="updateStatus('${maP}', this.value)">
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Chờ khám">Chờ khám</option>
+                                    <option value="Đã khám xong">Đã khám xong</option>
+                                    <option value="Hủy">Hủy</option>
                                 </select>
                             </td>
                         </tr>
                     `;
                 });
-                document.getElementById('tableBody').innerHTML = html;
-            });
+            })
+            .catch(err => console.error("Lỗi tải lịch khám:", err));
     }
 
-    function updateStatus(id, newStatus) {
-        fetch('/api/phieu-kham/update-status', {
+    // ĐÂY LÀ HÀM SỬA LỖI KHÔNG CẬP NHẬT ĐƯỢC TRẠNG THÁI
+    function updateStatus(maPhieu, trangThaiMoi) {
+        if(!trangThaiMoi) return;
+
+        fetch(`${API_PHIEU}/update-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ maPhieuDK: id, trangThai: newStatus })
-        }).then(() => {
-            loadData(); // Tải lại bảng để cập nhật màu sắc lập tức
-        });
+            body: JSON.stringify({
+                maPhieu: maPhieu,     // Gửi chính xác chữ 'maPhieu' cho Java
+                trangThai: trangThaiMoi // Gửi chính xác chữ 'trangThai' cho Java
+            })
+        })
+        .then(async res => {
+            const text = await res.text();
+            if (res.ok) {
+                alert("Cập nhật thành công!");
+                loadAppointments(); // Load lại bảng để thấy màu mới
+            } else {
+                alert("Cập nhật thất bại: " + text);
+            }
+        })
+        .catch(err => alert("Lỗi kết nối Server!"));
+    }
+
+    // ==========================================
+    // JS CHO TAB 2: QUẢN LÝ BỆNH NHÂN
+    // ==========================================
+    function loadPatients() {
+        fetch(API_BENHNHAN)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('patientTableBody');
+                tbody.innerHTML = '';
+                data.forEach(bn => {
+                    let ma = bn.maBN || bn.MaBN;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${ma || ''}</td>
+                            <td>${bn.hoTen || ''}</td>
+                            <td>${bn.cccd || ''}</td>
+                            <td>${bn.sdt || ''}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm me-2" onclick="openEditModal('${ma}', '${bn.hoTen}', '${bn.cccd}', '${bn.sdt}')">Sửa</button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePatient('${ma}')">Xóa</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(err => console.error("Lỗi tải danh sách BN:", err));
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').innerText = "Thêm Bệnh Nhân Mới";
+        document.getElementById('patientForm').reset();
+        document.getElementById('maBN').readOnly = false;
+        document.getElementById('isEditMode').value = "false";
+        patientModal.show();
+    }
+
+    function openEditModal(maBN, hoTen, cccd, sdt) {
+        document.getElementById('modalTitle').innerText = "Cập Nhật Thông Tin";
+        document.getElementById('maBN').value = maBN;
+        document.getElementById('hoTen').value = hoTen !== 'undefined' ? hoTen : '';
+        document.getElementById('cccd').value = cccd !== 'undefined' ? cccd : '';
+        document.getElementById('sdt').value = sdt !== 'undefined' ? sdt : '';
+        document.getElementById('maBN').readOnly = true;
+        document.getElementById('isEditMode').value = "true";
+        patientModal.show();
+    }
+
+    function savePatient() {
+        const maBN = document.getElementById('maBN').value.trim();
+        const hoTen = document.getElementById('hoTen').value.trim();
+        const cccd = document.getElementById('cccd').value.trim();
+        const sdt = document.getElementById('sdt').value.trim();
+        const isEditMode = document.getElementById('isEditMode').value === "true";
+
+        if (!maBN || !hoTen) {
+            alert("Vui lòng nhập Mã BN và Họ Tên!");
+            return;
+        }
+
+        const payload = { maBN, hoTen, cccd, sdt };
+        const endpoint = isEditMode ? `${API_BENHNHAN}/edit/${maBN}` : `${API_BENHNHAN}/add`;
+        const method = isEditMode ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(async res => {
+            const text = await res.text();
+            if (res.ok) {
+                alert(text);
+                patientModal.hide();
+                loadPatients();
+            } else {
+                alert("Lỗi: " + text);
+            }
+        })
+        .catch(err => alert("Lỗi mạng!"));
+    }
+
+    function deletePatient(id) {
+        if (confirm(`Bạn có chắc muốn xóa BN: ${id}?`)) {
+            fetch(`${API_BENHNHAN}/delete/${id}`, { method: 'DELETE' })
+            .then(async res => {
+                const text = await res.text();
+                if (res.ok) {
+                    alert(text);
+                    loadPatients();
+                } else {
+                    alert("Lỗi: " + text);
+                }
+            })
+            .catch(err => alert("Lỗi mạng!"));
+        }
     }
 
     function logout() {
         localStorage.clear();
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
     }
 </script>
 </body>

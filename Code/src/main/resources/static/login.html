@@ -37,16 +37,18 @@
             return res.json();
         })
         .then(user => {
-            localStorage.setItem('userId', user.id); // Lưu mã người dùng
-            localStorage.setItem('role', user.role);
+    // 1. Đổi lại tên biến cho khớp 100% với Java gửi lên (MaNV, MaQuyen)
+    localStorage.setItem('userId', user.MaNV);
+    localStorage.setItem('role', user.MaQuyen);
+    localStorage.setItem('userName', user.TenNhanVien); // Lưu thêm tên để sau này hiện "Xin chào bác sĩ..."
 
-            // Phân luồng trang web
-            if (user.role === 'BACSI' || user.role === 'ADMIN') {
-                window.location.href = '/doctor_dashboard.html';
-            } else {
-                window.location.href = '/patient_dashboard.html'; // Sẽ tạo sau
-            }
-        })
+    // 2. Phân luồng trang web dựa vào MaQuyen
+    if (user.MaQuyen === 'BACSI' || user.MaQuyen === 'ADMIN') {
+        window.location.href = 'doctor_dashboard.html'; // Lưu ý: Mình bỏ dấu '/' ở đầu đi để tránh lỗi đường dẫn nhé
+    } else {
+        window.location.href = 'patient_dashboard.html';
+    }
+})
         .catch(err => {
             document.getElementById('error-msg').innerText = err.message;
             document.getElementById('error-msg').style.display = 'block';

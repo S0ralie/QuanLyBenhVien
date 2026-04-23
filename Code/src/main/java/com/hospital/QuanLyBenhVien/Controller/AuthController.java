@@ -13,15 +13,25 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin("*")
 public class AuthController {
 
     @Autowired
     private EntityManager entityManager;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
+    // SỬA DÒNG NÀY: Chuyển từ @RequestParam sang @RequestBody Map
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
 
-        // CÂU LỆNH MỚI: Chỉ kiểm tra tài khoản và lấy tên Nhân viên y tế
+        // Bóc tách dữ liệu từ JSON Web gửi lên
+        String username = payload.get("username");
+        String password = payload.get("password");
+
+        // (Nếu Web của bạn gửi chữ 'TenDangNhap' thay vì 'username' thì bạn đổi lại nhé)
+        if (username == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu tên đăng nhập hoặc mật khẩu"));
+        }
+
         String sql = "SELECT tk.TenDangNhap, tk.MaQuyen, tk.MaNV, nv.HoTen AS TenNhanVien " +
                 "FROM TaiKhoan tk " +
                 "JOIN NhanVienYTe nv ON tk.MaNV = nv.MaNV " +
@@ -31,23 +41,19 @@ public class AuthController {
         query.setParameter("username", username);
         query.setParameter("password", password);
 
-        // Ép kiểu kết quả về dạng Map (Key - Value) để trả về JSON cho Web dễ đọc
         query.unwrap(NativeQuery.class).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 
         List<Map<String, Object>> result = query.getResultList();
 
-        // Kiểm tra nếu List rỗng nghĩa là sai tài khoản hoặc mật khẩu
         if (result.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of("message", "Sai tên đăng nhập hoặc mật khẩu!"));
         }
 
-        // Nếu thành công, trả về thông tin của Bác sĩ/Nhân viên
         Map<String, Object> userInfo = result.get(0);
 
-        // BẢO MẬT THÊM: Chặn luôn nếu lỡ còn sót tài khoản Bệnh nhân nào trong DB
         String quyen = (String) userInfo.get("MaQuyen");
         if ("BENHNHAN".equalsIgnoreCase(quyen)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Bệnh nhân vui lòng ra trang chủ tra cứu, không dùng cổng đăng nhập này!"));
+            return ResponseEntity.status(403).body(Map.of("message", "Bệnh nhân vui lòng ra trang chủ tra cứu!"));
         }
 
         return ResponseEntity.ok(userInfo);
